@@ -56,9 +56,18 @@ async function loadFactory() {
   if (!cachedFactory) {
     cachedFactory = (async () => {
       const kitModule = await import('@creit.tech/stellar-wallets-kit');
-      const utilsModule = await import('@creit.tech/stellar-wallets-kit/utils');
+      const {
+        FreighterModule,
+        AlbedoModule,
+        xBullModule,
+      } = await import('@creit.tech/stellar-wallets-kit');
 
-      const modules = [...utilsModule.allowAllModules()];
+      // Only include supported wallets: Freighter, Albedo, xBull
+      const modules = [
+        new FreighterModule(),
+        new AlbedoModule(),
+        new xBullModule(),
+      ];
 
       return {
         createKit: (selectedWalletId?: string) =>

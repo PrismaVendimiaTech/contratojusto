@@ -18,7 +18,12 @@ export default function RootLayout({
       <head>
         <title>ContratoJusto - Derechos laborales digitales</title>
         <meta name="description" content="Contratos laborales digitales para trabajadores informales en Argentina" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta property="og:title" content="ContratoJusto - Derechos laborales digitales" />
+        <meta property="og:description" content="Contratos laborales digitales para trabajadores informales en Argentina" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://contratojusto.nuestrascuentitas.com" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="font-sans bg-slate-50 text-slate-800 antialiased">
         <WalletProvider>

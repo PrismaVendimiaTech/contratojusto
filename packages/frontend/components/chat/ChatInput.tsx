@@ -31,7 +31,7 @@ export default function ChatInput({ input, onChange, onSubmit, disabled }: ChatI
         whileTap={{ scale: 0.95 }}
         type="submit"
         disabled={disabled || !input.trim()}
-        className="bg-brand-primary text-white rounded-lg p-3 disabled:opacity-50 transition-all"
+        className="bg-brand-primary text-white rounded-lg p-3 min-w-11 min-h-11 flex items-center justify-center disabled:opacity-50 transition-all"
       >
         <Send size={18} />
       </motion.button>

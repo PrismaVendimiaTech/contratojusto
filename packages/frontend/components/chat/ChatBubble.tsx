@@ -11,7 +11,7 @@ interface ChatBubbleProps {
 
 const bubbleStyles = {
   ai: 'bg-white border border-slate-200 shadow-sm rounded-2xl rounded-tl-sm max-w-[85%] mr-auto',
-  user: 'bg-[#1E3A5F] rounded-2xl rounded-tr-sm max-w-[85%] ml-auto',
+  user: 'bg-brand-primary rounded-2xl rounded-tr-sm max-w-[85%] ml-auto',
   system: 'bg-slate-100 rounded-xl max-w-[90%] mx-auto text-center',
 };
 

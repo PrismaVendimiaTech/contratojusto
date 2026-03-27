@@ -18,17 +18,24 @@ export default function WalletConnect() {
 
   if (isConnected && address) {
     return (
-      <motion.button
-        whileTap={{ scale: 0.97 }}
-        onClick={disconnect}
-        className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 text-sm text-white border border-white/20 hover:bg-white/20 transition-all"
+      <motion.div
+        initial={{ boxShadow: '0 0 0 0 rgba(16, 185, 129, 0)' }}
+        animate={{ boxShadow: '0 0 20px 4px rgba(16, 185, 129, 0.3)' }}
+        transition={{ duration: 0.5, times: [0, 1] }}
+        className="rounded-lg"
       >
-        <span className="w-2 h-2 rounded-full bg-emerald-400" />
-        <span className="font-mono">
-          {selectedWalletName ? `${selectedWalletName}: ` : ''}
-          {truncateAddress(address)}
-        </span>
-      </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={disconnect}
+          className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 text-sm text-white border border-white/20 hover:bg-white/20 transition-all"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          <span className="font-mono">
+            {selectedWalletName ? `${selectedWalletName}: ` : ''}
+            {truncateAddress(address)}
+          </span>
+        </motion.button>
+      </motion.div>
     );
   }
 

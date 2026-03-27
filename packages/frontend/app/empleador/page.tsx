@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import AppHeader from '@/components/shared/AppHeader';
 import ContractStatus from '@/components/employer/ContractStatus';
 import CreateContractForm from '@/components/employer/CreateContractForm';
@@ -17,7 +18,12 @@ export default function EmpleadorPage() {
   return (
     <div className="min-h-screen">
       <AppHeader />
-      <div className="pt-20 px-4 pb-8 max-w-lg mx-auto space-y-4">
+      <motion.div
+        className="pt-20 px-4 pb-8 max-w-lg mx-auto space-y-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+      >
         {isLoading && !info && (
           <div className="animate-pulse space-y-4">
             <div className="h-32 bg-slate-200 rounded-xl" />
@@ -46,7 +52,7 @@ export default function EmpleadorPage() {
             )}
           </>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

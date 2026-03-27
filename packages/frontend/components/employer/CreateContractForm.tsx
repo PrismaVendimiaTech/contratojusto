@@ -33,7 +33,7 @@ export default function CreateContractForm() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
       <h2 className="font-semibold text-lg text-slate-800 mb-4">Crear contrato</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -52,7 +52,7 @@ export default function CreateContractForm() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-slate-600 mb-1">% Ahorro</label>
             <input

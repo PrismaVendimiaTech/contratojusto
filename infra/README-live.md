@@ -9,22 +9,27 @@
 - Repo-tracked contract: `infra/.env.example` and `infra/.env.template`
 - Backup channel: SOPS + age for operator continuity only
 
-Two secret scopes must exist in the vault:
+Two vault projects now exist:
 
-- `demo-window`
-  - temporary developer access
-  - enough to run the repo locally in live mode
-  - must not include `DOKPLOY_*`
-- `ops`
-  - operator, CI/`turismo`, and explicitly trusted permanent developers only
+- `vendimia-tech`
+  - main project
+  - contains `demo-window` and `ops`
+  - `ops` is for operator, CI/`turismo`, and explicitly trusted permanent developers only
   - includes deploy, runtime, and operational secrets
+- `vendimia-tech-public`
+  - public-only project
+  - contains only the minimal runtime subset needed outside tailnet
+  - is the only project assigned to the temporary public user
 
-Current platform constraint:
+Current access model:
 
-- the Infisical free plan on `teslita` does not allow assigning custom project roles to human members
-- because of that, the temporary hackathon access is implemented with a revocable `service token` scoped to `demo-window`, not with a human `viewer` user
-- the fallback human user may exist in the organization for recovery, but it must stay without project membership unless the plan changes
-- trusted long-lived collaborators should use a dedicated read-only `ops` service token or an operator-prepared offline bundle, not the temporary hackathon token
+- Infisical is now reachable publicly at `https://vault.nuestrascuentitas.com`
+- permanent trusted collaborators should use a dedicated human user with access to:
+  - `vendimia-tech`
+  - `vendimia-tech-public`
+- the temporary hackathon user must only have `viewer` access to `vendimia-tech-public`
+- `DOKPLOY_*` and other operational secrets stay only in `ops` under the main project
+- SOPS backup remains operator/continuity-only and is not a distribution channel for teammates
 
 Programadores should prefer `mkey run` instead of `mkey pull` so secrets stay process-local whenever possible.
 
@@ -53,21 +58,21 @@ $MKEY = "$HOME\\.agents\\skills\\mi-key-cli\\scripts\\mkey.ps1"
 
 ## 3. Developer onboarding before the cutoff
 
-Expected flow for programadores:
+Expected flow for temporary public access:
 
 ```powershell
 $MKEY = "$HOME\\.agents\\skills\\mi-key-cli\\scripts\\mkey.ps1"
-& $MKEY run vendimia-tech demo-window -- pnpm --filter frontend dev
+& $MKEY run vendimia-tech-public dev -- pnpm --filter frontend dev
 ```
 
-If `mkey run` is blocked by the current wrapper bug, use the temporary service token path prepared by the operator for `demo-window` and avoid persisting plaintext env files.
+If `mkey run` is blocked by the current wrapper bug, use the operator-prepared offline bundle and avoid persisting extra plaintext env files outside the intended local `infra/.env`.
 
 Optional checks:
 
 ```powershell
-& $MKEY run vendimia-tech demo-window -- pnpm --filter frontend lint
-& $MKEY run vendimia-tech demo-window -- pnpm --filter frontend typecheck
-& $MKEY run vendimia-tech demo-window -- pnpm --filter frontend build
+& $MKEY run vendimia-tech-public dev -- pnpm --filter frontend lint
+& $MKEY run vendimia-tech-public dev -- pnpm --filter frontend typecheck
+& $MKEY run vendimia-tech-public dev -- pnpm --filter frontend build
 ```
 
 Only the operator should generate or persist `infra/.env` locally.
@@ -76,18 +81,21 @@ Only the operator should generate or persist `infra/.env` locally.
 
 If a collaborator needs ongoing local access and is not on the tailnet:
 
-- prepare an offline bundle outside the repo with:
-  - `vendimia-tech.infra.env`
-  - demo accounts / wallet material needed for local signing
-  - a read-only `ops` service token for later refreshes
+- create a dedicated human Infisical user for that collaborator
+- give that user project access to:
+  - `vendimia-tech`
+  - `vendimia-tech-public`
 - the preferred bootstrap is:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\bootstrap-vendimia-tech.ps1 -RepoPath C:\ruta\a\vendimia-tech
+$MKEY = "$HOME\\.agents\\skills\\mi-key-cli\\scripts\\mkey.ps1"
+& $MKEY login teslita
+& $MKEY run vendimia-tech ops -- pnpm --filter frontend dev
 ```
 
-- if the vault later becomes reachable from that machine, the collaborator can refresh from `ops` with the operator-provided token instead of requesting secrets manually again
-- if `WalletConnect` is not preconfigured in the bundle, the supported local path is Freighter or another Stellar wallet that can import the provided secret keys
+- if the collaborator needs a fast no-questions path, the operator may still hand over the offline bootstrap bundle
+- that bundle is now a convenience path, not the primary path
+- if `WalletConnect` is not preconfigured in the workstation, the supported local path is Freighter or another Stellar wallet that can import the provided secret keys
 
 ## 4. Runtime live checklist
 
@@ -108,13 +116,13 @@ The temporary developer access window ends on:
 
 At that time:
 
-- revoke the temporary `demo-window` service token used for the hackathon window
-- remove any human fallback user from project membership if it was re-added manually
-- revoke any developer-scoped machine identities or access tokens
+- remove the temporary public human user from `vendimia-tech-public`
+- revoke any temporary public service token if one was issued as fallback
+- verify the temporary public user no longer sees any project in Infisical
 - verify that a developer identity can no longer run:
 
 ```powershell
-& $MKEY run vendimia-tech demo-window -- pnpm --filter frontend dev
+& $MKEY run vendimia-tech-public dev -- pnpm --filter frontend dev
 ```
 
 Important:
@@ -128,8 +136,8 @@ Important:
 
 Current expectation for this repo:
 
-- `demo-window` uses a dedicated micro-proxy key for temporary runtime access
-- `ops` uses a separate dedicated micro-proxy key for operator and trusted developer workflows
+- `vendimia-tech-public/dev` uses a dedicated micro-proxy key for temporary runtime access
+- `vendimia-tech/ops` uses a separate dedicated micro-proxy key for operator and trusted developer workflows
 - if either key must be rotated, update the vault first and then refresh any offline bundles derived from `ops`
 
 ## 7. Deploy to `turismo`
