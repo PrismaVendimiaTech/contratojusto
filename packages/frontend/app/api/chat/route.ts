@@ -1,4 +1,4 @@
-import { streamText } from 'ai';
+import { generateText } from 'ai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createChatTools } from '@/lib/ai-tools';
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
   } = await req.json();
   const tools = createChatTools({ contractId, actorAddress });
 
-  const result = streamText({
+  const { text, toolResults } = await generateText({
     model: provider(process.env.AI_MODEL || 'kimi'),
     system: SYSTEM_PROMPT,
     messages,
@@ -56,7 +56,27 @@ export async function POST(req: Request) {
     maxSteps: 3,
   });
 
-  const response = result.toDataStreamResponse();
-  response.headers.set('Connection', 'close');
-  return response;
+  // Build Vercel AI SDK data stream protocol response (non-streaming)
+  const parts: string[] = [];
+  if (toolResults && toolResults.length > 0) {
+    for (const tr of toolResults) {
+      parts.push(`9:${JSON.stringify({ toolCallId: tr.toolCallId, toolName: tr.toolName, args: tr.args })}\n`);
+      parts.push(`a:${JSON.stringify({ toolCallId: tr.toolCallId, result: tr.result })}\n`);
+    }
+    parts.push(`e:${JSON.stringify({ finishReason: 'tool-calls', usage: { promptTokens: null, completionTokens: null }, isContinued: true })}\n`);
+    parts.push(`f:${JSON.stringify({ messageId: 'msg-' + Date.now() })}\n`);
+  }
+  if (text) {
+    parts.push(`0:${JSON.stringify(text)}\n`);
+  }
+  parts.push(`e:${JSON.stringify({ finishReason: 'stop', usage: { promptTokens: null, completionTokens: null }, isContinued: false })}\n`);
+  parts.push(`d:${JSON.stringify({ finishReason: 'stop', usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 } })}\n`);
+
+  return new Response(parts.join(''), {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Connection': 'close',
+      'X-Vercel-AI-Data-Stream': 'v1',
+    },
+  });
 }
