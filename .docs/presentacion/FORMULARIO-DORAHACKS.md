@@ -23,9 +23,7 @@ Subir imagen del logo. Si no tienen logo, dejar vacio.
 Reemplazar con los datos reales de cada integrante:
 
 ```
-[NOMBRE COMPLETO 1] - [email1@ejemplo.com]
-[NOMBRE COMPLETO 2] - [email2@ejemplo.com]
-[NOMBRE COMPLETO 3] - [email3@ejemplo.com]
+Gabriel Paz - fgpaz@teslita.com
 ```
 
 ---
@@ -94,7 +92,7 @@ STACK TECNICO
 
 DEMO FUNCIONAL
 
-MVP funcionando en Stellar Testnet. URL: https://nuestrascuentitas.com
+MVP funcionando en Stellar Testnet. URL: https://contratojusto.nuestrascuentitas.com
 
 IMPACTO
 

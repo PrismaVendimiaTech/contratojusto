@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContratoJusto - Pitch Deck</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f8fafc; overflow: hidden; }
+  .slide { width: 100vw; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 60px 80px; position: relative; }
+  .slide.active { display: flex; }
+  .slide-number { position: absolute; bottom: 20px; right: 30px; font-size: 14px; color: #64748b; }
+  h1 { font-size: 56px; font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+  h2 { font-size: 42px; font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+  h3 { font-size: 28px; font-weight: 600; margin-bottom: 12px; color: #10b981; }
+  p, li { font-size: 24px; line-height: 1.6; color: #cbd5e1; }
+  .highlight { color: #10b981; }
+  .brand { color: #3b82f6; }
+  .stat { font-size: 72px; font-weight: 900; color: #10b981; margin-bottom: 8px; }
+  .stat-label { font-size: 20px; color: #94a3b8; }
+  .stats-row { display: flex; gap: 80px; margin-top: 40px; text-align: center; }
+  ul { list-style: none; padding: 0; }
+  ul li { padding: 8px 0; padding-left: 30px; position: relative; }
+  ul li::before { content: ""; position: absolute; left: 0; top: 16px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; width: 100%; max-width: 1100px; }
+  .flow-step { background: #1e293b; border-radius: 16px; padding: 24px 28px; margin-bottom: 16px; border-left: 4px solid #10b981; }
+  .flow-step .step-num { font-size: 14px; color: #10b981; font-weight: 700; margin-bottom: 4px; }
+  .flow-step p { font-size: 20px; color: #e2e8f0; }
+  .tech-badge { display: inline-block; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px 16px; margin: 4px; font-size: 18px; }
+  .cta { background: linear-gradient(135deg, #1e3a5f, #10b981); padding: 20px 40px; border-radius: 12px; font-size: 28px; font-weight: 700; margin-top: 30px; }
+  .url { font-size: 20px; color: #10b981; margin-top: 16px; font-family: monospace; }
+  .subtitle { font-size: 24px; color: #94a3b8; margin-bottom: 40px; }
+  .center { text-align: center; }
+  .shield { font-size: 80px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<!-- Slide 1: Title -->
+<div class="slide active" id="s1">
+  <div class="center">
+    <div class="shield">&#x1f6e1;</div>
+    <h1>Contrato<span class="highlight">Justo</span></h1>
+    <p class="subtitle">Derechos laborales digitales para trabajadores informales</p>
+    <p style="font-size: 18px; color: #64748b;">Vendimia Tech 2026 &middot; Stellar Track &middot; Gabriel Paz</p>
+  </div>
+  <span class="slide-number">1/8</span>
+</div>
+
+<!-- Slide 2: Problem -->
+<div class="slide" id="s2">
+  <h2>El problema</h2>
+  <div class="stats-row">
+    <div><div class="stat">46%</div><div class="stat-label">Trabajadores informales<br>en Argentina</div></div>
+    <div><div class="stat">0</div><div class="stat-label">Jubilacion, indemnizacion<br>o derechos verificables</div></div>
+    <div><div class="stat">200%+</div><div class="stat-label">Inflacion anual<br>Sus ahorros se evaporan</div></div>
+  </div>
+  <p style="margin-top: 40px; font-size: 28px; text-align: center;">Si te echan, no tenes nada. Ni indemnizacion, ni ahorro, ni prueba de que trabajaste.</p>
+  <span class="slide-number">2/8</span>
+</div>
+
+<!-- Slide 3: Solution -->
+<div class="slide" id="s3">
+  <h2>La solucion: <span class="highlight">ContratoJusto</span></h2>
+  <div class="two-col">
+    <div>
+      <ul>
+        <li><strong>Ahorro en dolares</strong> protegido de la inflacion</li>
+        <li><strong>Separacion automatica</strong> de ahorro e indemnizacion</li>
+        <li><strong>Auto-ejecutable</strong>: al terminar el contrato, la indemnizacion se libera sola</li>
+        <li><strong>Asesor IA</strong> que habla en castellano simple</li>
+      </ul>
+    </div>
+    <div>
+      <div class="flow-step"><div class="step-num">PASO 1</div><p>Empleador crea contrato digital</p></div>
+      <div class="flow-step"><div class="step-num">PASO 2</div><p>Deposita dolares &rarr; 70% ahorro + 30% indemnizacion</p></div>
+      <div class="flow-step"><div class="step-num">PASO 3</div><p>Trabajador pregunta al chat: "cuanto tengo?"</p></div>
+      <div class="flow-step"><div class="step-num">PASO 4</div><p>IA consulta la blockchain y responde en castellano</p></div>
+    </div>
+  </div>
+  <span class="slide-number">3/8</span>
+</div>
+
+<!-- Slide 4: How it works -->
+<div class="slide" id="s4">
+  <h2>Como funciona</h2>
+  <div class="center" style="max-width: 900px;">
+    <p style="font-size: 22px; margin-bottom: 30px;">El trabajador nunca ve la blockchain. Solo habla con su asesor.</p>
+    <div style="background: #1e293b; border-radius: 16px; padding: 40px; text-align: left;">
+      <p style="color: #94a3b8; font-size: 16px; margin-bottom: 8px;">Trabajador dice:</p>
+      <p style="font-size: 26px; color: #3b82f6; margin-bottom: 20px;">"Cuanto tengo ahorrado?"</p>
+      <p style="color: #94a3b8; font-size: 16px; margin-bottom: 8px;">La IA hace:</p>
+      <p style="font-size: 18px; color: #64748b; margin-bottom: 20px; font-family: monospace;">consultarBalance() &rarr; Soroban RPC &rarr; get_balance()</p>
+      <p style="color: #94a3b8; font-size: 16px; margin-bottom: 8px;">El asesor responde:</p>
+      <p style="font-size: 26px; color: #10b981;">"Tenes 700 dolares en ahorro y 300 en indemnizacion."</p>
+    </div>
+  </div>
+  <span class="slide-number">4/8</span>
+</div>
+
+<!-- Slide 5: Tech Stack -->
+<div class="slide" id="s5">
+  <h2>Stack tecnico</h2>
+  <div class="two-col" style="margin-top: 20px;">
+    <div>
+      <h3>Blockchain</h3>
+      <div class="tech-badge">Soroban (Rust)</div>
+      <div class="tech-badge">Stellar Testnet</div>
+      <div class="tech-badge">USDC Token</div>
+      <div class="tech-badge">Stellar Wallets Kit</div>
+      <h3 style="margin-top: 24px;">Frontend</h3>
+      <div class="tech-badge">Next.js 15</div>
+      <div class="tech-badge">React 19</div>
+      <div class="tech-badge">Tailwind CSS 4</div>
+      <div class="tech-badge">Framer Motion</div>
+    </div>
+    <div>
+      <h3>IA</h3>
+      <div class="tech-badge">Vercel AI SDK</div>
+      <div class="tech-badge">Tool Calling</div>
+      <div class="tech-badge">micro-proxy (LiteLLM)</div>
+      <h3 style="margin-top: 24px;">Infraestructura</h3>
+      <div class="tech-badge">Dokploy PaaS</div>
+      <div class="tech-badge">Docker + Traefik</div>
+      <div class="tech-badge">HTTPS / Let's Encrypt</div>
+    </div>
+  </div>
+  <span class="slide-number">5/8</span>
+</div>
+
+<!-- Slide 6: Demo -->
+<div class="slide" id="s6">
+  <div class="center">
+    <h2>Demo en vivo</h2>
+    <div class="cta">contratojusto.nuestrascuentitas.com</div>
+    <p style="margin-top: 30px; font-size: 22px;">Contrato real en Stellar Testnet<br>IA real consultando la blockchain<br>Wallet real (Freighter)</p>
+  </div>
+  <span class="slide-number">6/8</span>
+</div>
+
+<!-- Slide 7: Roadmap -->
+<div class="slide" id="s7">
+  <h2>Roadmap</h2>
+  <ul style="max-width: 700px;">
+    <li>Deploy en Stellar <strong>mainnet</strong> con auditoria de seguridad</li>
+    <li>Integracion con <strong>Trustless Work</strong> (escrow estandar)</li>
+    <li><strong>Telegram bot</strong> como canal secundario para trabajadores sin computadora</li>
+    <li>Reputacion de empleador <strong>on-chain</strong></li>
+    <li>Conversion automatica <strong>USDC/ARS</strong> via anchors de Stellar</li>
+  </ul>
+  <span class="slide-number">7/8</span>
+</div>
+
+<!-- Slide 8: Close -->
+<div class="slide" id="s8">
+  <div class="center">
+    <div class="shield">&#x1f6e1;</div>
+    <h1>Contrato<span class="highlight">Justo</span></h1>
+    <p style="font-size: 28px; margin-top: 16px;">Porque tus derechos laborales<br>no deberian depender de un papel.</p>
+    <div style="margin-top: 40px;">
+      <p class="url">github.com/PrismaVendimiaTech/contratojusto</p>
+      <p class="url">contratojusto.nuestrascuentitas.com</p>
+    </div>
+    <p style="margin-top: 30px; font-size: 18px; color: #64748b;">Gabriel Paz &middot; @fgpaz &middot; Vendimia Tech 2026</p>
+  </div>
+  <span class="slide-number">8/8</span>
+</div>
+
+<script>
+let current = 1;
+const total = 8;
+function go(n) {
+  document.querySelector('.slide.active')?.classList.remove('active');
+  current = Math.max(1, Math.min(total, n));
+  document.getElementById('s' + current).classList.add('active');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') go(current + 1);
+  if (e.key === 'ArrowLeft') go(current - 1);
+});
+document.addEventListener('click', e => {
+  if (e.clientX > window.innerWidth / 2) go(current + 1);
+  else go(current - 1);
+});
+</script>
+</body>
+</html>

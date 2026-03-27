@@ -55,7 +55,7 @@ Formulario de submission: https://docs.google.com/forms/d/e/1FAIpQLSdRUG-kZ0GoDq
 
 ## Demo en vivo
 
-- URL: https://nuestrascuentitas.com
+- URL: https://contratojusto.nuestrascuentitas.com
 - Flujo sugerido para el pitch: iniciar sesion -> chat -> escribir "cuanto ahorre este mes?" -> mostrar respuesta -> iniciar deposito -> firmar tx con wallet
 
 ---
