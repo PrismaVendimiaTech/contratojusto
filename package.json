@@ -10,7 +10,16 @@
     "contract:test": "cd packages/contract && cargo test",
     "contract:deploy": "cd packages/contract && stellar contract deploy --wasm target/wasm32-unknown-unknown/release/contrato_justo.wasm --network testnet --source mi-wallet"
   },
-  "keywords": ["stellar", "soroban", "usdc", "labor-rights", "hackathon"],
+  "keywords": [
+    "stellar",
+    "soroban",
+    "usdc",
+    "labor-rights",
+    "hackathon"
+  ],
   "author": "Gabriel Paz",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@stellar/stellar-sdk": "^13.3.0"
+  }
 }

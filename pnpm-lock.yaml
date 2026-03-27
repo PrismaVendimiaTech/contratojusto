@@ -6,7 +6,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    dependencies:
+      '@stellar/stellar-sdk':
+        specifier: ^13.3.0
+        version: 13.3.0
 
   packages/frontend:
     dependencies:
