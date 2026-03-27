@@ -1,0 +1,49 @@
+DEEP SCAN EXECUTION INDEX
+Date: 2026-03-26
+
+PRIMARY REPORT: deep-scan-results.txt
+
+FINDINGS SUMMARY:
+- CRITICAL GAPS: 3 (blocks deployment)
+- MAJOR GAPS: 2 (significant issues)
+- MINOR ISSUES: 2 (documentation)
+- VERIFIED OK: 15+ (aligned)
+
+CRITICAL GAP #1: claim_savings() is_terminated (95% confidence)
+  Code forbids claims after termination
+  Specs RF-03-01 and FL-04 say ALWAYS allowed
+  Location: lib.rs lines 113-114
+  Status: BLOCKS DEPLOYMENT
+
+CRITICAL GAP #2: RF-01-01 Input Missing Parameter (90% confidence)
+  RF-01-01 Input missing employer: Address parameter
+  Code requires employer as first parameter
+  Location: 04_RF.md line 20
+  Status: BLOCKS DEPLOYMENT
+
+CRITICAL GAP #3: CT-01 Missing Error Documentation (95% confidence)
+  is_terminated error for claim_savings not documented
+  CT-01 is unique integration reference source
+  Location: 09_contratos_tecnicos.md lines 39-44
+  Status: BLOCKS DEPLOYMENT
+
+MAJOR GAP #1: FL-02 Missing is_terminated (90% confidence)
+  FL-02 doesn't document is_terminated check
+  But RF-02-01 documents it and code enforces it
+  Status: SIGNIFICANT ISSUE
+
+MAJOR GAP #2: Parameter Naming Inconsistency (80% confidence)
+  FL uses semantic names (employer_address) vs code uses generic (from)
+  Confusing for frontend developers
+  Status: CONFUSES INTEGRATION
+
+FILES AFFECTED:
+- packages/contract/src/lib.rs (lines 113-114)
+- packages/contract/src/test.rs (line 118)
+- .docs/wiki/04_RF.md (lines 20, 56)
+- .docs/wiki/FL/FL-01-crear-contrato.md (line 16)
+- .docs/wiki/FL/FL-02-depositar-usdc.md (lines 7, 49-57)
+- .docs/wiki/FL/FL-04-reclamar-ahorro.md (line 59)
+- .docs/wiki/09_contratos_tecnicos.md (lines 39-44)
+
+SCAN COMPLETE

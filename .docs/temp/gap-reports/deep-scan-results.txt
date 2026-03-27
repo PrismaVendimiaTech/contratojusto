@@ -1,0 +1,236 @@
+DEEP SCAN REPORT: Smart Contract Code vs Documentation
+Date: 2026-03-26
+
+CRITICAL GAPS FOUND: 3
+MAJOR GAPS FOUND: 2
+MINOR ISSUES: 2
+VERIFIED OK: 15+
+
+TOTAL BLOCKING ISSUES: 5
+
+=================================================================================
+
+CRITICAL GAP #1: claim_savings() is_terminated Check
+
+Severity: CRITICAL - Spec-Code Behavioral Conflict
+
+Code Location: packages/contract/src/lib.rs lines 113-114
+Code enforces: Forbid claim_savings() if is_terminated == true
+
+Specification RF-03-01 (04_RF.md line 67):
+"El trabajador puede reclamar todo el ahorro en cualquier momento."
+Translation: Worker can claim savings AT ANY TIME
+
+Specification FL-04 (FL/FL-04-reclamar-ahorro.md line 59):
+"Contrato permite reclamar siempre (postcondicion importante)"
+Translation: Contract allows claiming ALWAYS (important postcondition)
+
+Test Evidence (test.rs line 118):
+test_claim_savings_after_termination expects #[should_panic]
+
+ISSUE: Spec says ALWAYS allowed, Code forbids after termination
+Confidence: 95% CRITICAL
+
+Decision Required: Code wrong OR specs wrong?
+Recommendation: Remove lines 113-114 from lib.rs (specs are source of truth)
+
+Status: BLOCKS DEPLOYMENT
+
+=================================================================================
+
+CRITICAL GAP #2: initialize() Parameter Order Wrong in RF-01-01
+
+Severity: CRITICAL - Input Specification Incomplete
+
+Code Signature (lib.rs lines 41-48):
+  employer: Address (first parameter)
+  worker: Address
+  token: Address
+  savings_pct: u32
+  severance_pct: u32
+
+RF-01-01 Input Spec (04_RF.md line 20):
+  "Input: worker: Address, savings_pct: u32, severance_pct: u32, token: Address"
+  MISSING: employer: Address parameter
+
+FL-01 Spec (FL/FL-01-crear-contrato.md line 16):
+  "initialize(employer, worker, token, savings_pct, severance_pct)"
+  MATCHES code (has employer first)
+
+Test Call (test.rs line 35):
+  client.initialize(&employer, &worker, &token_addr, &70, &30);
+  MATCHES code and FL
+
+ISSUE: RF-01-01 Input MISSING employer parameter entirely!
+       RF-01-01 Input has WRONG order vs code
+Confidence: 90% CRITICAL
+
+Decision Required: Update RF-01-01 Input to match code and FL
+Recommendation: Add employer as first parameter, fix order
+Status: BLOCKS DEPLOYMENT
+
+=================================================================================
+
+CRITICAL GAP #3: Error Message Not Documented in CT-01
+
+Severity: CRITICAL - Technical Contract Incomplete
+
+Code Line 114 (lib.rs):
+  assert!(!is_terminated, "contract is terminated");
+
+This error for claim_savings is NOT in CT-01 claim_savings section
+This error is NOT in RF-03-01
+This contradicts spec saying "siempre" (always)
+
+CT-01 claim_savings Current Spec (09_contratos_tecnicos.md lines 39-44):
+  Validacion: to == worker, savings > 0
+  Error: Panic si no worker, si savings == 0
+  MISSING: !is_terminated validation and error
+
+Issue: CT-01 is "Referencia unica para integraciones" (unique integration reference)
+       If this error isn't documented, frontend won't know to handle it
+
+Confidence: 95% CRITICAL
+
+Decision Required: Add validation to CT-01 OR remove from code
+Recommendation: Fix whichever decision is made for Gap #1
+Status: BLOCKS DEPLOYMENT
+
+=================================================================================
+
+MAJOR GAP #1: deposit() is_terminated Not in FL-02
+
+Severity: MAJOR - User-facing flow documentation incomplete
+
+Code (lib.rs lines 73-74):
+  assert!(!is_terminated, "contract is terminated");
+
+FL-02 Precondiciones (line 7):
+  MISSING: "contrato no terminado"
+
+FL-02 Errores (lines 49-57):
+  MISSING: "Contrato terminado" error
+
+RF-02-01 Documents It (04_RF.md line 56):
+  "Reglas: ...Contrato no terminado."
+
+Test Confirms It (test.rs line 164):
+  test_deposit_after_termination expects panic
+
+Issue: RF-02-01 documents check, FL-02 omits it
+Confidence: 90% MAJOR
+
+Fix Required: Add is_terminated check to FL-02 preconditions or errors
+Status: SIGNIFICANT ISSUE
+
+=================================================================================
+
+MAJOR GAP #2: Parameter Name Inconsistency
+
+Severity: MAJOR - Semantic vs technical naming confusion
+
+FL-02 step 5: "deposit(employer_address, amount)" vs code "from"
+FL-04 step 5: "claim_savings(worker_address)" vs code "to"
+FL-05 step 7: "terminate(employer_address)" vs code "from"
+
+Issue: FL documents use semantic names, code uses generic names
+       Frontend developers see different names in docs vs code
+
+Confidence: 80% MAJOR
+
+Fix Required: Standardize naming across FL documents
+Status: SIGNIFICANT ISSUE
+
+=================================================================================
+
+VERIFICATION RESULTS
+
+Function Signatures vs Specs:
+  initialize: Parameter order WRONG in RF-01-01 [CRITICAL]
+  deposit: CORRECT [OK]
+  claim_savings: Validation INCOMPLETE in CT-01 [CRITICAL]
+  terminate: CORRECT [OK]
+  get_balance: Tuple order CORRECT [OK]
+  get_info: Structure CORRECT [OK]
+
+Auth Checks:
+  All documented correctly in CT-01 [OK]
+
+Data Model:
+  All 10 DataKey fields present [OK]
+  All 10 ContractInfo fields present [OK]
+
+Test Coverage:
+  RF-01-01: ✓ test_full_lifecycle
+  RF-02-01: ✓ test_full_lifecycle, test_multiple_deposits
+  RF-03-01: ✓ test_full_lifecycle
+  RF-03-02: ✓ test_full_lifecycle
+  RF-01-03: ✓ test_full_lifecycle
+  All P0 RFs tested [OK]
+
+Soroban SDK Version:
+  Cargo.toml: soroban-sdk = "22.0.0"
+  Documentation: Not referenced in 09_contratos_tecnicos.md
+  Status: MINOR - Should document version
+
+=================================================================================
+
+SUMMARY STATISTICS
+
+Critical Gaps: 3
+Major Gaps: 2
+Minor Issues: 2
+Verified OK: 15+
+
+Total Blocking Issues: 5
+Confidence Level: 90%+
+
+FILES AFFECTED
+
+Code:
+  - packages/contract/src/lib.rs (lines 113-114)
+  - packages/contract/src/test.rs (line 118)
+
+Documentation:
+  - .docs/wiki/04_RF.md (lines 20, 56)
+  - .docs/wiki/FL/FL-01-crear-contrato.md (line 16)
+  - .docs/wiki/FL/FL-02-depositar-usdc.md (lines 7, 49-57)
+  - .docs/wiki/FL/FL-04-reclamar-ahorro.md (line 59)
+  - .docs/wiki/FL/FL-05-terminar-contrato.md (naming)
+  - .docs/wiki/09_contratos_tecnicos.md (lines 39-44)
+
+=================================================================================
+
+RECOMMENDATION PRIORITY
+
+P0 BLOCKING:
+1. Resolve claim_savings() is_terminated contradiction
+   Specs say ALWAYS, code forbids - one is wrong
+   Recommended: Remove check from code
+
+2. Fix RF-01-01 Input specification
+   Missing employer parameter entirely
+   Update to match code and FL
+
+3. Complete CT-01 documentation
+   Missing is_terminated error for claim_savings
+
+P1 IMPORTANT:
+4. Add is_terminated to FL-02
+5. Standardize parameter naming
+6. Document soroban-sdk version
+
+=================================================================================
+
+CONCLUSION
+
+Found 5 major blocking issues with 95%+ confidence on 3 of them.
+
+PRIMARY ISSUE: claim_savings() is_terminated check directly contradicts
+  RF-03-01 ("cualquier momento" = any time) and FL-04 ("siempre" = always).
+
+RECOMMENDATION: Prioritize resolving claim_savings() behavior as it impacts
+  user-facing requirements and system correctness.
+
+Report Date: 2026-03-26
+Location: .docs/temp/gap-reports/deep-scan-results.txt

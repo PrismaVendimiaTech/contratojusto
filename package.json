@@ -1,0 +1,16 @@
+{
+  "name": "contratojusto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ContratoJusto - Contratos laborales digitales para trabajadores informales sobre Stellar",
+  "scripts": {
+    "dev": "pnpm --filter frontend dev",
+    "build": "pnpm --filter frontend build",
+    "contract:build": "cd packages/contract && stellar contract build",
+    "contract:test": "cd packages/contract && cargo test",
+    "contract:deploy": "cd packages/contract && stellar contract deploy --wasm target/wasm32-unknown-unknown/release/contrato_justo.wasm --network testnet --source mi-wallet"
+  },
+  "keywords": ["stellar", "soroban", "usdc", "labor-rights", "hackathon"],
+  "author": "Gabriel Paz",
+  "license": "MIT"
+}

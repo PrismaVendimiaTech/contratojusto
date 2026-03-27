@@ -1,0 +1,142 @@
+================================================================================
+UX/UI VISUAL CHAIN CONSISTENCY SCAN - SUMMARY
+Generated: 2026-03-26
+================================================================================
+
+SCOPE: Analyzed 5-document chain for consistency violations
+Files scanned:
+  1. /c/repos/mios/vendimia-tech/.docs/wiki/10_manifiesto_marca_experiencia.md
+  2. /c/repos/mios/vendimia-tech/.docs/wiki/10_identidad_visual.md
+  3. /c/repos/mios/vendimia-tech/.docs/wiki/10_lineamientos_interfaz_visual.md
+  4. /c/repos/mios/vendimia-tech/.docs/wiki/10_patrones_ui.md
+  5. /c/repos/mios/vendimia-tech/.docs/wiki/07_tech/TECH-FRONTEND-SYSTEM-DESIGN.md
+
+================================================================================
+FINDINGS SUMMARY
+================================================================================
+
+Total gaps: 21
+  Critical (blocks implementation):     5
+  Major (should fix before dev):       10
+  Minor (clarifications):               4
+  False positives suppressed:           0
+
+By category:
+  Color consistency:      5 gaps (3 critical + 2 major)
+  Component specs:        4 gaps (1 critical + 3 major)
+  Typography:             3 gaps (1 critical + 1 major + 1 minor)
+  Spacing/radius:         4 gaps (all major)
+  Tone/personality:       2 gaps (1 critical + 1 major)
+  Mobile-first:           1 gap (major)
+  Documentation structure: 3 gaps (2 major + 1 minor)
+
+Files with most gaps:
+  10_lineamientos_interfaz_visual.md:  14 gaps
+  10_identidad_visual.md:              12 gaps
+  10_patrones_ui.md:                   10 gaps
+  TECH-FRONTEND-SYSTEM-DESIGN.md:      8 gaps
+  10_manifiesto_marca_experiencia.md:  3 gaps
+
+================================================================================
+CRITICAL GAPS (MUST FIX BEFORE IMPLEMENTATION)
+================================================================================
+
+1. PRIMARY COLOR TOKEN NOT STANDARDIZED
+   Issue: #1E3A5F referenced as bg-[#1E3A5F], text-[#1E3A5F], and brand.primary
+   Impact: Color changes require edits in 3+ places with 3 different syntaxes
+   
+2. FONT LOADING MISSING
+   Issue: identidad_visual says "Inter" but TECH-FRONTEND has no import code
+   Impact: Developers won't know how to load the font; might use system font
+   
+3. CHAT COLOR NAMING INCONSISTENT
+   Issue: Chat backgrounds have 3 names: "Chat AI bg", chat.ai token, bg-blue-50
+   Impact: Developers won't know which is canonical; causes confusion in PRs
+   
+4. TONE EXAMPLES NOT IN IMPLEMENTATION DOCS
+   Issue: Manifiesto has ✅/❌ examples but lineamientos/TECH don't reference them
+   Impact: Developers won't know about "formal-cálido" rule, emoji prohibition, "dólares not USDC"
+   
+5. ERROR/SUCCESS COLORS MISSING FROM TOKENS
+   Issue: Identidad defines colors but patrones_ui design tokens section omits them
+   Impact: If developers follow "use colors from patrones_ui", they won't have error color
+
+================================================================================
+MAJOR GAPS (SHOULD FIX BEFORE DESIGN HAND-OFF)
+================================================================================
+
+6. ActionButton component not unified across docs (spec exists but docs scattered)
+7. BalanceCard missing from lineamientos (spec exists only in patrones_ui)
+8. SignTxButton incomplete in lineamientos (missing states: loading, success, error)
+9. Spacing scale incomplete (4xl = 64px used but not defined)
+10. Rounded-full not in identidad (patrones_ui mentions it but identidad doesn't)
+11. Line heights not in design tokens (identidad defines but patrones_ui omits)
+12. Mobile-first strategy scattered (only mentioned in lineamientos, not emphasized elsewhere)
+13. Secondary color (Esmeralda) unnamed in lineamientos (appears only as emerald-600)
+14. Shadow scale incomplete (shadow-lg mentioned but not in identidad definitions)
+15. Personality traits not mapped to UI (traits defined but no "how to implement" guide)
+
+================================================================================
+IMPACT ASSESSMENT
+================================================================================
+
+HIGHEST RISK (likely to cause implementation problems):
+  Gap 1: Color token standardization
+    - Without this, color changes will require coordinating 3+ documents
+    - Frontend config will be unmaintainable
+    
+  Gap 2: Font loading strategy
+    - Without code in TECH-FRONTEND, developers might not load Inter at all
+    - Visual identity breaks immediately
+    
+  Gap 4: Tone examples in implementation docs
+    - Without guidelines, developers will guess at tone
+    - UX copy will be inconsistent and unprofessional
+    - Risk of violating "no emojis" or "no USDC" rules
+
+MEDIUM RISK (requires coordination between teams):
+  Gaps 6-8: Component specs scattered
+    - Designers and developers looking at different docs
+    - Implementation might not match visual specs
+    
+  Gaps 3,12,15: Inconsistent naming and emphasis
+    - Creates confusion in code reviews
+    - Slows down decision-making
+
+LOW RISK (clarifications mostly):
+  Gaps 16-21: Minor terminology, cross-linking
+    - Don't block implementation
+    - Should still be fixed for maintainability
+
+================================================================================
+RECOMMENDED REMEDIATION SEQUENCE
+================================================================================
+
+Phase 1 (URGENT - before starting implementation):
+  1. Gap 1: Standardize color tokens (patrones_ui as canonical source)
+  2. Gap 2: Add font loading code to TECH-FRONTEND
+  3. Gap 4: Add tone/voice section to lineamientos and TECH
+  4. Gap 3: Canonicalize chat color naming in identidad_visual
+  5. Gap 5: Add error/success colors to patrones_ui tokens
+
+Phase 2 (IMPORTANT - before design hand-off):
+  6-10: Component specs unification
+  11-15: Typography, spacing, personality mappings
+
+Phase 3 (NICE TO HAVE - during development):
+  16-21: Terminology polish, cross-linking, anti-pattern enforcement
+
+================================================================================
+DETAILED REPORT
+================================================================================
+
+Full details available at:
+  /c/repos/mios/vendimia-tech/.docs/temp/gap-reports/ux-ui-chain-scan.md
+
+Each gap includes:
+  - Exact file locations and line numbers
+  - Description of the inconsistency
+  - Specific fix recommendation
+  - Impact/severity assessment
+
+================================================================================

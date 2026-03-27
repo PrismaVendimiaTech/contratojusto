@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* Brand gradient for header */
+.header-gradient {
+  background: linear-gradient(to right, #1E3A5F, #1E4A6F, rgba(16, 185, 129, 0.2));
+}
+
+/* Smooth scrollbar for chat */
+.chat-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+/* Number cascade animation */
+@keyframes number-drop {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.number-cascade span {
+  display: inline-block;
+  animation: number-drop 400ms ease-out backwards;
+}
