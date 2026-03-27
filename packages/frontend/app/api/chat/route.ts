@@ -56,9 +56,9 @@ export async function POST(req: Request) {
     maxSteps: 3,
   });
 
-  // Buffer the entire stream and send as single response
-  // This avoids Traefik chunked-encoding issues while keeping
-  // full useChat compatibility
+  // Buffer the stream, then re-emit as a slow-drip ReadableStream.
+  // This avoids Traefik killing chunked connections while keeping
+  // useChat happy (it needs a ReadableStream, not a static body).
   const streamResponse = result.toDataStreamResponse();
   const reader = streamResponse.body?.getReader();
   if (!reader) {
@@ -72,18 +72,20 @@ export async function POST(req: Request) {
     chunks.push(value);
   }
 
-  const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
-  const body = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const chunk of chunks) {
-    body.set(chunk, offset);
-    offset += chunk.length;
-  }
+  const reStream = new ReadableStream({
+    async start(controller) {
+      for (const chunk of chunks) {
+        controller.enqueue(chunk);
+      }
+      controller.close();
+    },
+  });
 
-  return new Response(body, {
+  return new Response(reStream, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Connection': 'close',
+      'Content-Length': String(chunks.reduce((s, c) => s + c.length, 0)),
       'X-Vercel-AI-Data-Stream': 'v1',
     },
   });
