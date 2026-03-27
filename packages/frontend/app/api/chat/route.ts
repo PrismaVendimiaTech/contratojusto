@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   const {
     messages,
     actorAddress,
-    contractId = process.env.NEXT_PUBLIC_CONTRACT_ID || 'fixture-contract',
+    contractId = process.env.NEXT_PUBLIC_CONTRACT_ID || '',
   } = await req.json();
   const tools = createChatTools({ contractId, actorAddress });
 

@@ -60,7 +60,12 @@ const ContractContext = createContext<ContractState | null>(null);
 export function ContractProvider({ children }: { children: ReactNode }) {
   const mode = getRuntimeMode();
   const configuredContractId = getContractId();
-  const contractId = configuredContractId || 'fixture-contract';
+  const contractId = (() => {
+    if (mode === 'live' && !configuredContractId) {
+      throw new Error('NEXT_PUBLIC_CONTRACT_ID es obligatorio en modo live.');
+    }
+    return configuredContractId || 'fixture-contract';
+  })();
   const tokenId = getTokenId();
   const { address, isConnected, signTransaction } = useWallet();
   const [balance, setBalance] = useState<Balance | null>(null);
