@@ -10,20 +10,28 @@ interface ChatBubbleProps {
 }
 
 const bubbleStyles = {
-  ai: 'bg-chat-ai rounded-2xl rounded-bl-sm max-w-[85%] mr-auto',
-  user: 'bg-chat-user rounded-2xl rounded-br-sm max-w-[85%] ml-auto',
+  ai: 'bg-white border border-slate-200 shadow-sm rounded-2xl rounded-tl-sm max-w-[85%] mr-auto',
+  user: 'bg-brand-primary text-white rounded-2xl rounded-tr-sm max-w-[85%] ml-auto',
   system: 'bg-chat-system rounded-xl max-w-[90%] mx-auto text-center',
+};
+
+const textStyles = {
+  ai: 'text-sm text-slate-800',
+  user: 'text-sm text-white',
+  system: 'text-sm text-slate-600',
 };
 
 export default function ChatBubble({ role, content, children }: ChatBubbleProps) {
   return (
     <motion.div
-      initial={{ y: 20, opacity: 0 }}
+      initial={{ y: 12, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.2 }}
-      className={`p-4 ${bubbleStyles[role]}`}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className={`px-4 py-3 ${bubbleStyles[role]}`}
     >
-      <p className="text-sm text-slate-800 whitespace-pre-wrap">{content}</p>
+      {content && (
+        <p className={`${textStyles[role]} whitespace-pre-wrap leading-relaxed`}>{content}</p>
+      )}
       {children}
     </motion.div>
   );

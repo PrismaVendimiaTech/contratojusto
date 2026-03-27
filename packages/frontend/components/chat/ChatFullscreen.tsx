@@ -42,7 +42,7 @@ export default function ChatFullscreen() {
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 64px - 56px)' }}>
       {/* Messages area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 chat-scroll space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 chat-scroll space-y-4 bg-slate-50">
         <ChatMessages items={timeline} isLoading={isLoading} />
         {!hasUserMessages && (
           <SuggestionChips
