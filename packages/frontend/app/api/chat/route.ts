@@ -56,37 +56,7 @@ export async function POST(req: Request) {
     maxSteps: 3,
   });
 
-  // Buffer the stream, then re-emit as a slow-drip ReadableStream.
-  // This avoids Traefik killing chunked connections while keeping
-  // useChat happy (it needs a ReadableStream, not a static body).
-  const streamResponse = result.toDataStreamResponse();
-  const reader = streamResponse.body?.getReader();
-  if (!reader) {
-    return new Response('Stream error', { status: 500 });
-  }
-
-  const chunks: Uint8Array[] = [];
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-  }
-
-  const reStream = new ReadableStream({
-    async start(controller) {
-      for (const chunk of chunks) {
-        controller.enqueue(chunk);
-      }
-      controller.close();
-    },
-  });
-
-  return new Response(reStream, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Connection': 'close',
-      'Content-Length': String(chunks.reduce((s, c) => s + c.length, 0)),
-      'X-Vercel-AI-Data-Stream': 'v1',
-    },
-  });
+  const response = result.toDataStreamResponse();
+  response.headers.set('Connection', 'close');
+  return response;
 }

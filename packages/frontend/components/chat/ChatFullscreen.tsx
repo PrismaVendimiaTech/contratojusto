@@ -18,14 +18,26 @@ const WELCOME_MESSAGE = {
 export default function ChatFullscreen() {
   const { contractId, systemEvents } = useContract();
   const { address } = useWallet();
-  const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
+  const reloadRef = useRef<(() => void) | null>(null);
+  const retryRef = useRef(false);
+  const { messages, input, handleInputChange, handleSubmit, isLoading, append, reload } = useChat({
     api: '/api/chat',
     initialMessages: [WELCOME_MESSAGE],
     body: {
       actorAddress: address,
       contractId,
     },
+    onError: () => {
+      if (!retryRef.current && reloadRef.current) {
+        retryRef.current = true;
+        setTimeout(() => {
+          reloadRef.current?.();
+          retryRef.current = false;
+        }, 800);
+      }
+    },
   });
+  reloadRef.current = reload;
   const timeline = buildChatTimeline(messages, systemEvents);
 
   const scrollRef = useRef<HTMLDivElement>(null);
