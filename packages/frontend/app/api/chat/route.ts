@@ -42,11 +42,19 @@ export async function POST(req: Request) {
   }
 
   const {
-    messages,
+    messages: rawMessages,
     actorAddress,
     contractId = process.env.NEXT_PUBLIC_CONTRACT_ID || '',
   } = await req.json();
   const tools = createChatTools({ contractId, actorAddress });
+
+  // Filter out tool-call messages from history - kimi can't handle them.
+  // Keep only user and assistant text messages for context.
+  const messages = rawMessages.filter((m: { role: string; toolInvocations?: unknown; tool_call_id?: string }) =>
+    m.role === 'user' || (m.role === 'assistant' && !m.toolInvocations) || m.role === 'system'
+  ).filter((m: { role: string; content?: string }) =>
+    m.role !== 'assistant' || (m.content && m.content.trim() !== '')
+  );
 
   const result = streamText({
     model: provider(process.env.AI_MODEL || 'kimi'),
