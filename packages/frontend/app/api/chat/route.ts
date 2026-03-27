@@ -56,5 +56,7 @@ export async function POST(req: Request) {
     maxSteps: 3,
   });
 
-  return result.toDataStreamResponse();
+  const response = result.toDataStreamResponse();
+  response.headers.set('Connection', 'close');
+  return response;
 }
