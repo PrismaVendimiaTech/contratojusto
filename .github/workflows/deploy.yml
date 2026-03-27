@@ -14,5 +14,17 @@ jobs:
           curl -sS -X POST \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"applicationId":"u2uAOXXHXjIEYrdsVtLm3"}' \
-            "http://54.37.157.93:3000/api/application.deploy"
+            -d '{"applicationId":"${{ secrets.DOKPLOY_APP_ID }}"}' \
+            "${{ secrets.DOKPLOY_URL }}/api/application.deploy"
+
+      - name: Wait for deploy to complete
+        run: sleep 120
+
+      - name: Health check
+        run: |
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" https://contratojusto.nuestrascuentitas.com/api/health)
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check failed with status $STATUS"
+            exit 1
+          fi
+          echo "Health check passed"

@@ -31,7 +31,16 @@ Current access model:
 - `DOKPLOY_*` and other operational secrets stay only in `ops` under the main project
 - SOPS backup remains operator/continuity-only and is not a distribution channel for teammates
 
+Operator-only local prerequisites in `infra/.env`:
+
+- `INFISICAL_ADMIN_EMAIL`
+- `INFISICAL_ADMIN_PASSWORD`
+- `INFISICAL_DEFAULT_ORGANIZATION`
+- `INFISICAL_VENDIMIA_PUBLIC_TEMP_EMAIL`
+
 Programadores should prefer `mkey run` instead of `mkey pull` so secrets stay process-local whenever possible.
+
+For a copyable teammate handoff, see `infra/DEV-ONBOARDING.md`.
 
 ## 2. Repo bootstrap
 
@@ -99,14 +108,34 @@ $MKEY = "$HOME\\.agents\\skills\\mi-key-cli\\scripts\\mkey.ps1"
 
 ## 4. Runtime live checklist
 
+Frontend runtime (build-time, `NEXT_PUBLIC_*`):
+
 - `NEXT_PUBLIC_RUNTIME_MODE=live`
 - `NEXT_PUBLIC_CONTRACT_ID`
 - `NEXT_PUBLIC_TOKEN_ID`
 - `NEXT_PUBLIC_STELLAR_SIMULATION_ADDRESS`
+- `NEXT_PUBLIC_SOROBAN_RPC_URL` (defaults to testnet if unset)
+- `NEXT_PUBLIC_HORIZON_URL` (defaults to testnet if unset)
+- `NEXT_PUBLIC_STELLAR_NETWORK_PASSPHRASE` (defaults to testnet if unset)
+- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` (required for WalletConnect)
+- `NEXT_PUBLIC_WALLETCONNECT_APP_NAME`
+- `NEXT_PUBLIC_WALLETCONNECT_APP_URL`
+- `NEXT_PUBLIC_WALLETCONNECT_APP_DESCRIPTION`
+- `NEXT_PUBLIC_WALLETCONNECT_APP_ICON`
+
+Server runtime (not embedded in client bundle):
+
 - `AI_PROXY_URL`
 - `AI_PROXY_KEY`
 - `AI_MODEL`
-- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` when WalletConnect is enabled
+
+Ops-only (deploy infrastructure):
+
+- `DOKPLOY_URL`
+- `DOKPLOY_API_KEY`
+- `DOKPLOY_APP_ID`
+- `DOKPLOY_PROJECT_ID`
+- `DOKPLOY_ENVIRONMENT_ID`
 
 ## 5. Cutoff window
 
@@ -129,6 +158,17 @@ Important:
 
 - this cutoff blocks future retrieval from the official secret system
 - it does not remotely erase plaintext `.env` files that were already copied to a developer machine
+
+Manual revocation command:
+
+```powershell
+pwsh -ExecutionPolicy Bypass -File .\infra\revoke-public-temp-access.ps1
+pwsh -ExecutionPolicy Bypass -File .\infra\revoke-public-temp-access.ps1 -Execute
+```
+
+- the first command is a dry-run
+- the second command deletes the temporary public user's organization membership
+- the script resolves the target from `INFISICAL_VENDIMIA_PUBLIC_TEMP_EMAIL` by default, but it also accepts `-TargetEmail`
 
 ## 6. AI proxy keys
 
