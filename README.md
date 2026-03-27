@@ -41,15 +41,14 @@ https://contratojusto.nuestrascuentitas.com
 
 ```bash
 git clone https://github.com/PrismaVendimiaTech/contratojusto.git
-cd vendimia-tech
+cd contratojusto
 pnpm install
-cp .env.example .env.local
-pnpm dev
+mkey run vendimia-tech demo-window -- pnpm dev
 # Abrir http://localhost:3000
 ```
 
-> La API key de IA incluida es temporal y expira el 30/03/2026.
-> Para uso posterior, configurar tu propia key en `.env.local`.
+> Los secretos se obtienen via `mkey` (Infisical vault). Acceso temporal hasta 29/03/2026 23:00.
+> Sin mkey: `cp .env.example .env.local` y completar manualmente las variables.
 
 ### Prerequisitos
 

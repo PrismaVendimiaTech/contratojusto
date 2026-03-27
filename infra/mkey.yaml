@@ -1,0 +1,13 @@
+# `mkey` project contract for vendimia-tech.
+# Secret scopes expected in Infisical:
+# - `demo-window`: temporary developer runtime access
+# - `ops`: operator + CI/turismo access
+
+project: vendimia-tech
+vault: teslita
+default_env: demo-window
+sops:
+  # Fill with real age public recipients before the first `mkey backup`.
+  # Keep programadores out of this list.
+  age_recipients: []
+  encrypted_file: infra/secrets.enc.env

@@ -1,0 +1,9 @@
+# Bootstrap placeholder for SOPS.
+# Replace `age` with comma-separated real public recipients for:
+# - the operator
+# - CI/turismo
+# Do not add developer recipients if the backup must remain operator-only.
+
+creation_rules:
+  - path_regex: infra/secrets\.enc\.env$
+    age: ""

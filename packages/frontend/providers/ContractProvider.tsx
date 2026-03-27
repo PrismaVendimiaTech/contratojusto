@@ -66,7 +66,12 @@ export function ContractProvider({ children }: { children: ReactNode }) {
     }
     return configuredContractId || 'fixture-contract';
   })();
-  const tokenId = getTokenId();
+  const tokenId = (() => {
+    if (mode === 'live' && !getTokenId()) {
+      throw new Error('NEXT_PUBLIC_TOKEN_ID es obligatorio en modo live.');
+    }
+    return getTokenId();
+  })();
   const { address, isConnected, signTransaction } = useWallet();
   const [balance, setBalance] = useState<Balance | null>(null);
   const [info, setInfo] = useState<ContractInfo | null>(null);

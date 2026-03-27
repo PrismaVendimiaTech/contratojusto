@@ -12,6 +12,9 @@ target/
 .env
 .env.local
 .env.production
+infra/.env
+infra/.env.local
+infra/.env.production
 
 # IDE
 .vscode/
