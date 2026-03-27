@@ -23,7 +23,7 @@ export default function ChatInput({ input, onChange, onSubmit, disabled }: ChatI
         onChange={onChange}
         placeholder="Escribi tu pregunta..."
         disabled={disabled}
-        className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none disabled:opacity-50"
+        className="flex-1 border border-slate-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent focus:shadow-[0_0_0_3px_rgba(30,58,95,0.1)] outline-none disabled:opacity-50 transition-shadow"
         aria-label="Escribi tu pregunta"
         autoFocus
       />

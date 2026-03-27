@@ -2,7 +2,13 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  serverExternalPackages: ['pino', 'pino-pretty'],
   webpack: (config, { isServer }) => {
+    // Stub pino-pretty for WalletConnect (both server and client)
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'pino-pretty': false,
+    };
     if (!isServer) {
       // Polyfills for Stellar SDK in browser
       config.resolve.fallback = {

@@ -33,7 +33,7 @@ export default function CreateContractForm() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
+    <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl border border-white/40 p-4 sm:p-6">
       <h2 className="font-semibold text-lg text-slate-800 mb-4">Crear contrato</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

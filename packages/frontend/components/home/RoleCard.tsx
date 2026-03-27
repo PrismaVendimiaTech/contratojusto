@@ -18,7 +18,7 @@ export default function RoleCard({ title, description, href, icon: Icon }: RoleC
       <motion.div
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.98 }}
-        className="bg-white border border-slate-200 rounded-xl p-6 cursor-pointer hover:shadow-md transition-shadow"
+        className="bg-white/80 backdrop-blur-sm border border-white/40 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 rounded-xl p-6 cursor-pointer"
       >
         <div className="flex items-start gap-4">
           <div className="p-3 bg-brand-primary/5 rounded-xl">

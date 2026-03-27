@@ -5,6 +5,8 @@ import { Horizon } from '@stellar/stellar-sdk';
 import {
   getHorizonUrl,
   getNetworkPassphrase,
+  getWalletConnectProjectId,
+  getWalletConnectMetadata,
 } from './runtime-config';
 
 export interface SupportedWallet {
@@ -62,12 +64,35 @@ async function loadFactory() {
         xBullModule,
       } = await import('@creit.tech/stellar-wallets-kit');
 
-      // Only include supported wallets: Freighter, Albedo, xBull
-      const modules = [
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const modules: any[] = [
         new FreighterModule(),
         new AlbedoModule(),
         new xBullModule(),
       ];
+
+      // Add WalletConnect if a project ID is configured
+      const wcProjectId = getWalletConnectProjectId();
+      if (wcProjectId) {
+        try {
+          const { WalletConnectModule } = await import(
+            '@creit.tech/stellar-wallets-kit/modules/walletconnect.module'
+          );
+          const wcMeta = getWalletConnectMetadata();
+          const wcModule = new WalletConnectModule({
+            projectId: wcProjectId,
+            name: wcMeta.name,
+            description: wcMeta.description,
+            url: wcMeta.url,
+            icons: wcMeta.icons,
+            method: 'stellar_signXDR' as never,
+            network: kitModule.WalletNetwork.TESTNET,
+          });
+          modules.push(wcModule);
+        } catch (err) {
+          console.warn('WalletConnect module could not be loaded:', err);
+        }
+      }
 
       return {
         createKit: (selectedWalletId?: string) =>

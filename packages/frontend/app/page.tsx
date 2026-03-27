@@ -40,15 +40,18 @@ export default function HomePage() {
       initial="hidden"
       animate="visible"
     >
-      {/* Logo */}
+      {/* Logo with glow */}
       <motion.div className="flex items-center gap-3 mb-2" variants={itemVariants}>
-        <Shield size={28} className="text-brand-primary sm:hidden" />
-        <Shield size={36} className="text-brand-primary hidden sm:block" />
-        <h1 className="text-2xl sm:text-3xl font-bold text-brand-primary tracking-tight">
+        <div className="relative">
+          <div className="absolute inset-0 bg-brand-secondary/20 rounded-full blur-xl" />
+          <Shield size={28} className="text-brand-primary relative z-10 sm:hidden" />
+          <Shield size={36} className="text-brand-primary relative z-10 hidden sm:block" />
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#1E3A5F] to-[#10B981] bg-clip-text text-transparent tracking-tight">
           ContratoJusto
         </h1>
       </motion.div>
-      <motion.p className="text-sm text-slate-500 mb-10" variants={itemVariants}>
+      <motion.p className="text-base text-slate-500 mb-10" variants={itemVariants}>
         Derechos laborales digitales
       </motion.p>
 
@@ -92,7 +95,7 @@ export default function HomePage() {
       </motion.div>
 
       {/* Network label */}
-      <motion.p className="text-xs text-slate-400 mt-4" variants={itemVariants}>
+      <motion.p className="text-xs text-slate-500 bg-slate-100 rounded-full px-3 py-1 mt-4" variants={itemVariants}>
         Stellar Testnet
       </motion.p>
     </motion.div>

@@ -13,7 +13,7 @@ interface ActionButtonProps {
 }
 
 const variantStyles = {
-  primary: 'bg-brand-primary text-white hover:bg-brand-primary/90',
+  primary: 'bg-brand-primary text-white hover:bg-brand-primary/90 hover:shadow-[0_0_20px_rgba(30,58,95,0.3)] transition-shadow',
   secondary: 'border-2 border-brand-primary text-brand-primary bg-transparent hover:bg-brand-primary/5',
   accent: 'bg-amber-500 text-white font-bold hover:bg-amber-600',
   danger: 'bg-red-500 text-white hover:bg-red-600',
