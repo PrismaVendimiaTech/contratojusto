@@ -22,6 +22,7 @@ ARG NEXT_PUBLIC_TOKEN_ID
 ARG NEXT_PUBLIC_STELLAR_SIMULATION_ADDRESS
 ARG NEXT_PUBLIC_WALLETCONNECT_APP_NAME=ContratoJusto
 ARG NEXT_PUBLIC_WALLETCONNECT_APP_URL=https://contratojusto.nuestrascuentitas.com
+RUN mkdir -p packages/frontend/public
 RUN pnpm --filter frontend build
 
 FROM base AS runner
