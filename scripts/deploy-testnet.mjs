@@ -1,239 +1,123 @@
 #!/usr/bin/env node
 /**
- * Deploy ContratoJusto to Stellar Testnet
- *
+ * Deploy ContratoJusto to Stellar Testnet - one-shot script
  * Usage: node scripts/deploy-testnet.mjs
- *
- * This script:
- * 1. Creates employer + worker test accounts
- * 2. Funds them via Friendbot
- * 3. Wraps native XLM as a Soroban token (used as demo "USDC")
- * 4. Uploads the compiled WASM contract
- * 5. Deploys and initializes the contract (70% savings, 30% severance)
- * 6. Outputs all env values ready to paste
  */
-
 import {
-  Keypair,
-  TransactionBuilder,
-  BASE_FEE,
-  Operation,
-  Asset,
-  Address,
-  Contract,
-  nativeToScVal,
-  xdr,
-  rpc,
-  hash,
+  Keypair, TransactionBuilder, BASE_FEE, Operation, Asset,
+  Address, Contract, nativeToScVal, xdr, rpc, StrKey,
 } from '@stellar/stellar-sdk';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RPC_URL = 'https://soroban-testnet.stellar.org';
-const HORIZON_URL = 'https://horizon-testnet.stellar.org';
-const NETWORK_PASSPHRASE = 'Test SDF Network ; September 2015';
-const FRIENDBOT_URL = 'https://friendbot.stellar.org';
+const PASSPHRASE = 'Test SDF Network ; September 2015';
 const WASM_PATH = path.join(__dirname, '..', 'packages', 'contract', 'target', 'wasm32-unknown-unknown', 'release', 'contrato_justo.wasm');
 
 const server = new rpc.Server(RPC_URL);
+const log = (m) => console.log(`>> ${m}`);
 
-function log(msg) {
-  console.log(`\n>> ${msg}`);
+async function fund(pub) {
+  const r = await fetch(`https://friendbot.stellar.org?addr=${pub}`);
+  if (!r.ok) throw new Error(`Friendbot fail: ${r.status}`);
 }
 
-async function fundAccount(publicKey) {
-  const res = await fetch(`${FRIENDBOT_URL}?addr=${publicKey}`);
-  if (!res.ok) throw new Error(`Friendbot failed for ${publicKey}: ${res.status}`);
-  return true;
-}
-
-async function buildAndSubmit(sourceKeypair, operations, memo) {
-  const account = await server.getAccount(sourceKeypair.publicKey());
-  let txBuilder = new TransactionBuilder(account, {
-    fee: BASE_FEE,
-    networkPassphrase: NETWORK_PASSPHRASE,
-  });
-
-  for (const op of operations) {
-    txBuilder = txBuilder.addOperation(op);
-  }
-
-  const tx = txBuilder.setTimeout(60).build();
-
-  const simulated = await server.simulateTransaction(tx);
-  if ('error' in simulated) {
-    throw new Error(`Simulation failed: ${simulated.error}`);
-  }
-
-  const prepared = rpc.assembleTransaction(tx, simulated).build();
-  prepared.sign(sourceKeypair);
-
-  const submitted = await server.sendTransaction(prepared);
-  if (submitted.status === 'ERROR') {
-    throw new Error(`Submit failed: ${JSON.stringify(submitted)}`);
-  }
-
-  log(`  Tx hash: ${submitted.hash} (polling...)`);
-
-  // Manual polling to avoid SDK XDR parse issues
-  let result;
+async function send(kp, ops) {
+  const acc = await server.getAccount(kp.publicKey());
+  let b = new TransactionBuilder(acc, { fee: BASE_FEE, networkPassphrase: PASSPHRASE });
+  for (const op of ops) b = b.addOperation(op);
+  const tx = b.setTimeout(60).build();
+  const sim = await server.simulateTransaction(tx);
+  if ('error' in sim) throw new Error(`Sim: ${sim.error}`);
+  const prep = rpc.assembleTransaction(tx, sim).build();
+  prep.sign(kp);
+  const sub = await server.sendTransaction(prep);
+  if (sub.status === 'ERROR') throw new Error(`Send: ${JSON.stringify(sub)}`);
+  log(`  tx: ${sub.hash}`);
+  // Poll via raw RPC to avoid SDK XDR parse issues
   for (let i = 0; i < 30; i++) {
     await new Promise(r => setTimeout(r, 2000));
-    try {
-      result = await server.getTransaction(submitted.hash);
-      if (result.status === 'SUCCESS' || result.status === 'FAILED') break;
-    } catch (e) {
-      // May throw on XDR parse, try raw fetch
-      const raw = await fetch(`${RPC_URL}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'getTransaction',
-          params: { hash: submitted.hash },
-        }),
-      });
-      const json = await raw.json();
-      if (json.result && json.result.status === 'SUCCESS') {
-        result = json.result;
-        break;
-      }
-      if (json.result && json.result.status === 'FAILED') {
-        throw new Error('Transaction failed on-chain');
-      }
-    }
+    const raw = await fetch(RPC_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getTransaction', params: { hash: sub.hash } }),
+    });
+    const j = await raw.json();
+    if (j.result?.status === 'SUCCESS') return { txHash: sub.hash, ...j.result };
+    if (j.result?.status === 'FAILED') throw new Error('Tx FAILED on-chain');
   }
+  throw new Error('Tx not confirmed in 60s');
+}
 
-  if (!result || result.status === 'NOT_FOUND') {
-    throw new Error('Transaction not confirmed after 60s');
-  }
-
-  return result;
+function deriveContractId(deployerPub, salt) {
+  const networkIdHash = crypto.createHash('sha256').update(PASSPHRASE).digest();
+  const deployerBytes = StrKey.decodeEd25519PublicKey(deployerPub);
+  const preimage = xdr.HashIdPreimage.envelopeTypeContractId(
+    new xdr.HashIdPreimageContractId({
+      networkId: networkIdHash,
+      contractIdPreimage: xdr.ContractIdPreimage.contractIdPreimageFromAddress(
+        new xdr.ContractIdPreimageFromAddress({
+          address: xdr.ScAddress.scAddressTypeAccount(xdr.PublicKey.publicKeyTypeEd25519(deployerBytes)),
+          salt,
+        })
+      ),
+    })
+  );
+  return StrKey.encodeContract(crypto.createHash('sha256').update(preimage.toXDR()).digest());
 }
 
 async function main() {
-  console.log('='.repeat(60));
+  console.log('============================================================');
   console.log('  ContratoJusto - Deploy a Stellar Testnet');
-  console.log('='.repeat(60));
+  console.log('============================================================');
 
-  // Check WASM exists
-  if (!fs.existsSync(WASM_PATH)) {
-    console.error(`\nERROR: WASM no encontrado en ${WASM_PATH}`);
-    console.error('Ejecuta primero: cd packages/contract && cargo build --target wasm32-unknown-unknown --release');
-    process.exit(1);
-  }
+  if (!fs.existsSync(WASM_PATH)) { console.error('WASM not found. Run cargo build first.'); process.exit(1); }
+  const wasm = fs.readFileSync(WASM_PATH);
+  log(`WASM: ${wasm.length} bytes`);
 
-  const wasmBytes = fs.readFileSync(WASM_PATH);
-  log(`WASM cargado: ${wasmBytes.length} bytes`);
-
-  // 1. Generate keypairs
-  log('Generando cuentas de prueba...');
+  // 1. Accounts
   const employer = Keypair.random();
   const worker = Keypair.random();
+  log('Cuentas generadas');
+  console.log(`  EMPLOYER_PUBLIC=${employer.publicKey()}`);
+  console.log(`  EMPLOYER_SECRET=${employer.secret()}`);
+  console.log(`  WORKER_PUBLIC=${worker.publicKey()}`);
+  console.log(`  WORKER_SECRET=${worker.secret()}`);
 
-  console.log(`  Employer: ${employer.publicKey()}`);
-  console.log(`  Worker:   ${worker.publicKey()}`);
+  // 2. Fund
+  log('Fondeando...');
+  await fund(employer.publicKey());
+  await fund(worker.publicKey());
+  log('Fondeado OK');
 
-  // 2. Fund accounts
-  log('Fondeando cuentas via Friendbot...');
-  await fundAccount(employer.publicKey());
-  console.log('  Employer fondeado');
-  await fundAccount(worker.publicKey());
-  console.log('  Worker fondeado');
-
-  // 3. Get native XLM SAC address (already wrapped on testnet)
-  log('Obteniendo token XLM nativo (SAC)...');
-  const tokenId = Asset.native().contractId(NETWORK_PASSPHRASE);
-  log(`  Token SAC (XLM nativo): ${tokenId}`);
+  // 3. Token (native XLM SAC)
+  const tokenId = Asset.native().contractId(PASSPHRASE);
+  log(`Token SAC: ${tokenId}`);
 
   // 4. Upload WASM
-  log('Subiendo contrato WASM a Soroban...');
-  const uploadResult = await buildAndSubmit(employer, [
-    Operation.uploadContractWasm({ wasm: wasmBytes }),
+  log('Subiendo WASM...');
+  await send(employer, [Operation.uploadContractWasm({ wasm })]);
+  const wasmHash = crypto.createHash('sha256').update(wasm).digest();
+  log(`WASM hash: ${wasmHash.toString('hex')}`);
+
+  // 5. Deploy - use known salt so we can derive CONTRACT_ID
+  log('Deployando contrato...');
+  const salt = crypto.randomBytes(32);
+  const contractId = deriveContractId(employer.publicKey(), salt);
+  log(`CONTRACT_ID pre-derivado: ${contractId}`);
+
+  await send(employer, [
+    Operation.createCustomContract({ wasmHash, address: new Address(employer.publicKey()), salt }),
   ]);
+  log('Deploy OK');
 
-  // Compute WASM hash locally (SHA-256)
-  const crypto = await import('crypto');
-  const wasmHash = crypto.createHash('sha256').update(wasmBytes).digest();
-  log(`  WASM hash: ${wasmHash.toString('hex')}`);
-
-  // 5. Deploy contract instance
-  log('Deployando instancia del contrato...');
-  const deployResult = await buildAndSubmit(employer, [
-    Operation.createCustomContract({
-      wasmHash,
-      address: new Address(employer.publicKey()),
-    }),
-  ]);
-
-  // Extract contract ID from the deploy result
-  let contractId;
-
-  // Try SDK parsed result first
-  if (deployResult.returnValue) {
-    try {
-      contractId = Address.fromScVal(deployResult.returnValue).toString();
-    } catch (e) { /* try next method */ }
-  }
-
-  // Try parsing resultMetaXdr for contract creation
-  if (!contractId && deployResult.resultMetaXdr) {
-    try {
-      const metaXdr = typeof deployResult.resultMetaXdr === 'string'
-        ? deployResult.resultMetaXdr
-        : deployResult.resultMetaXdr.toXDR('base64');
-
-      // Search for contract address in the meta (look for 32-byte contract hash)
-      // The contract ID is in the ledger changes
-      const meta = xdr.TransactionMeta.fromXDR(metaXdr, 'base64');
-      const v3 = meta.v3();
-      const sorobanMeta = v3.sorobanMeta();
-      if (sorobanMeta) {
-        const retVal = sorobanMeta.returnValue();
-        contractId = Address.fromScVal(retVal).toString();
-      }
-    } catch (e) {
-      // Try raw diagnosticEventsXdr
-    }
-  }
-
-  // Try extracting from diagnostic events
-  if (!contractId && deployResult.diagnosticEventsXdr) {
-    try {
-      const events = Array.isArray(deployResult.diagnosticEventsXdr)
-        ? deployResult.diagnosticEventsXdr
-        : [deployResult.diagnosticEventsXdr];
-      for (const evtXdr of events) {
-        const evt = typeof evtXdr === 'string'
-          ? xdr.DiagnosticEvent.fromXDR(evtXdr, 'base64')
-          : evtXdr;
-        const body = evt.event().body().v0();
-        const data = body.data();
-        if (data.switch().name === 'scvAddress' && data.address().switch().name === 'scAddressTypeContract') {
-          contractId = Address.contract(data.address().contractId()).toString();
-          break;
-        }
-      }
-    } catch (e) { /* final fallback needed */ }
-  }
-
-  if (!contractId) {
-    console.log('  NOTA: No se pudo extraer CONTRACT_ID automaticamente.');
-    console.log('  Tx hash del deploy:', deployResult.txHash);
-    console.log('  Busca en https://stellar.expert/explorer/testnet/tx/' + deployResult.txHash);
-    throw new Error('Extrae CONTRACT_ID manualmente del link de arriba.');
-  }
-  log(`  CONTRACT_ID: ${contractId}`);
-
-  // 6. Initialize contract
-  log('Inicializando contrato (70% ahorro, 30% indemnizacion)...');
+  // 6. Initialize (70% savings, 30% severance)
+  log('Inicializando contrato...');
   const contract = new Contract(contractId);
-  await buildAndSubmit(employer, [
-    contract.call(
-      'initialize',
+  await send(employer, [
+    contract.call('initialize',
       new Address(employer.publicKey()).toScVal(),
       new Address(worker.publicKey()).toScVal(),
       new Address(tokenId).toScVal(),
@@ -241,33 +125,34 @@ async function main() {
       nativeToScVal(30, { type: 'u32' }),
     ),
   ]);
-  log('  Contrato inicializado');
+  log('Inicializado OK (70/30)');
 
-  // 7. Output results
-  console.log('\n' + '='.repeat(60));
+  // 7. Output
+  console.log('\n============================================================');
   console.log('  DEPLOY COMPLETADO');
-  console.log('='.repeat(60));
-
-  console.log('\n--- Valores para .env.example ---\n');
+  console.log('============================================================');
+  console.log('\n--- .env.example values ---\n');
   console.log(`NEXT_PUBLIC_CONTRACT_ID=${contractId}`);
   console.log(`NEXT_PUBLIC_TOKEN_ID=${tokenId}`);
   console.log(`NEXT_PUBLIC_STELLAR_SIMULATION_ADDRESS=${employer.publicKey()}`);
-
-  console.log('\n--- Claves de las cuentas de prueba (guardar!) ---\n');
+  console.log('\n--- Test accounts (save these!) ---\n');
   console.log(`EMPLOYER_PUBLIC=${employer.publicKey()}`);
   console.log(`EMPLOYER_SECRET=${employer.secret()}`);
   console.log(`WORKER_PUBLIC=${worker.publicKey()}`);
   console.log(`WORKER_SECRET=${worker.secret()}`);
 
-  console.log('\n--- Configuracion del contrato ---\n');
-  console.log(`Savings: 70% | Severance: 30%`);
-  console.log(`Token: XLM nativo (SAC) - usado como "dolares" en la demo`);
-  console.log(`Network: Stellar Testnet`);
-
-  console.log('\n' + '='.repeat(60));
+  // Save to file for reference
+  const out = `# ContratoJusto Testnet Deploy - ${new Date().toISOString()}
+NEXT_PUBLIC_CONTRACT_ID=${contractId}
+NEXT_PUBLIC_TOKEN_ID=${tokenId}
+NEXT_PUBLIC_STELLAR_SIMULATION_ADDRESS=${employer.publicKey()}
+EMPLOYER_PUBLIC=${employer.publicKey()}
+EMPLOYER_SECRET=${employer.secret()}
+WORKER_PUBLIC=${worker.publicKey()}
+WORKER_SECRET=${worker.secret()}
+`;
+  fs.writeFileSync(path.join(__dirname, '..', '.testnet-deploy.env'), out);
+  log('Valores guardados en .testnet-deploy.env');
 }
 
-main().catch((err) => {
-  console.error('\nERROR:', err.message || err);
-  process.exit(1);
-});
+main().catch(e => { console.error('\nERROR:', e.message); process.exit(1); });

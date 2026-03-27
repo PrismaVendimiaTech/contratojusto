@@ -30,5 +30,8 @@ Thumbs.db
 # Tools
 .mi-lsp/
 
+# Deploy secrets
+.testnet-deploy.env
+
 # Misc
 *.log
