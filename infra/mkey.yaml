@@ -5,9 +5,11 @@
 
 project: vendimia-tech
 vault: teslita
+infisical_project_id: 221331c0-5c51-4f28-8380-c7ca2b67eef1
 default_env: demo-window
 sops:
-  # Fill with real age public recipients before the first `mkey backup`.
-  # Keep programadores out of this list.
-  age_recipients: []
+  # Operator + turismo only. Keep programadores out of this list.
+  age_recipients:
+    - age1dqg4eyvkxcrcsk576gq70qfawmaj5r08hh2nlkvgrwegywlpuf9sp8sv22
+    - age1ytwnr4rpe82e7y287njna3wa7apl55jcgqcf8f5xymtz6m4wpyrqxxnjqs
   encrypted_file: infra/secrets.enc.env
