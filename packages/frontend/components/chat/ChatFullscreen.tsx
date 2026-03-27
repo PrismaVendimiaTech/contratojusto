@@ -1,7 +1,7 @@
 'use client';
 
 import { useChat } from 'ai/react';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import SuggestionChips from './SuggestionChips';
@@ -18,13 +18,24 @@ const WELCOME_MESSAGE = {
 export default function ChatFullscreen() {
   const { contractId, systemEvents } = useContract();
   const { address } = useWallet();
-  const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
+  const retryRef = useRef<string | null>(null);
+  const { messages, input, handleInputChange, handleSubmit, isLoading, append, reload } = useChat({
     api: '/api/chat',
     initialMessages: [WELCOME_MESSAGE],
     body: {
       actorAddress: address,
       contractId,
     },
+    onError: useCallback(() => {
+      // Auto-retry once on streaming failure (Traefik connection reset)
+      if (!retryRef.current) {
+        retryRef.current = 'retrying';
+        setTimeout(() => {
+          reload();
+          retryRef.current = null;
+        }, 500);
+      }
+    }, [reload]),
   });
   const timeline = buildChatTimeline(messages, systemEvents);
 
