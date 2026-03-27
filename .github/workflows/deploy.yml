@@ -1,0 +1,18 @@
+name: Deploy to turismo
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Dokploy redeploy
+        run: |
+          curl -sS -X POST \
+            -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"applicationId":"u2uAOXXHXjIEYrdsVtLm3"}' \
+            "http://54.37.157.93:3000/api/application.deploy"
