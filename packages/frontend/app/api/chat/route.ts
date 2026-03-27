@@ -48,7 +48,7 @@ export async function POST(req: Request) {
   } = await req.json();
   const tools = createChatTools({ contractId, actorAddress });
 
-  const { text, toolResults } = await generateText({
+  const { text, steps } = await generateText({
     model: provider(process.env.AI_MODEL || 'kimi'),
     system: SYSTEM_PROMPT,
     messages,
@@ -56,20 +56,36 @@ export async function POST(req: Request) {
     maxSteps: 3,
   });
 
-  // Build Vercel AI SDK data stream protocol response (non-streaming)
+  // Build Vercel AI SDK data stream protocol v1 response
   const parts: string[] = [];
-  if (toolResults && toolResults.length > 0) {
-    for (const tr of toolResults) {
-      parts.push(`9:${JSON.stringify({ toolCallId: tr.toolCallId, toolName: tr.toolName, args: tr.args })}\n`);
-      parts.push(`a:${JSON.stringify({ toolCallId: tr.toolCallId, result: tr.result })}\n`);
+  const msgId = () => 'msg-' + Math.random().toString(36).slice(2, 14);
+
+  for (const step of steps) {
+    parts.push(`f:${JSON.stringify({ messageId: msgId() })}\n`);
+
+    if (step.toolCalls && step.toolCalls.length > 0) {
+      for (const tc of step.toolCalls) {
+        parts.push(`9:${JSON.stringify({ toolCallId: tc.toolCallId, toolName: tc.toolName, args: tc.args })}\n`);
+      }
+      if (step.toolResults) {
+        for (const tr of step.toolResults) {
+          parts.push(`a:${JSON.stringify({ toolCallId: tr.toolCallId, result: tr.result })}\n`);
+        }
+      }
+      parts.push(`e:${JSON.stringify({ finishReason: 'tool-calls', usage: { promptTokens: null, completionTokens: null }, isContinued: true })}\n`);
+    } else if (step.text) {
+      parts.push(`0:${JSON.stringify(step.text)}\n`);
+      parts.push(`e:${JSON.stringify({ finishReason: 'stop', usage: { promptTokens: null, completionTokens: null }, isContinued: false })}\n`);
     }
-    parts.push(`e:${JSON.stringify({ finishReason: 'tool-calls', usage: { promptTokens: null, completionTokens: null }, isContinued: true })}\n`);
-    parts.push(`f:${JSON.stringify({ messageId: 'msg-' + Date.now() })}\n`);
   }
-  if (text) {
+
+  // If no steps produced text, add the final text
+  if (text && !steps.some(s => s.text && !s.toolCalls?.length)) {
+    parts.push(`f:${JSON.stringify({ messageId: msgId() })}\n`);
     parts.push(`0:${JSON.stringify(text)}\n`);
+    parts.push(`e:${JSON.stringify({ finishReason: 'stop', usage: { promptTokens: null, completionTokens: null }, isContinued: false })}\n`);
   }
-  parts.push(`e:${JSON.stringify({ finishReason: 'stop', usage: { promptTokens: null, completionTokens: null }, isContinued: false })}\n`);
+
   parts.push(`d:${JSON.stringify({ finishReason: 'stop', usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 } })}\n`);
 
   return new Response(parts.join(''), {
